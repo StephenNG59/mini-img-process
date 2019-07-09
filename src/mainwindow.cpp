@@ -1,8 +1,6 @@
-#include "gray.h"
-#include "img_process.h"
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-
+#include "img_process.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -16,7 +14,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->pushButton_test, SIGNAL(clicked()), this, SLOT(on_pushButton_test_clicked()));
     connect(ui->actionOpen_Image, SIGNAL(triggered()), this, SLOT(on_actionOpen_Image_clicked()));
     connect(ui->horizontalSlider_test, SIGNAL(valueChanged(int)), this, SLOT(on_horizontalSlider_valueChanged(int)));
-    connect(ui->pushButton_gray, SIGNAL(clicked()), this, SLOT(on_pushButton_gray_clicked()));
+
 }
 
 MainWindow::~MainWindow()
@@ -49,12 +47,4 @@ void MainWindow::on_horizontalSlider_valueChanged(int value)
 
     ui->label_imgFrame->setPixmap(QPixmap::fromImage(changed_img));
     ui->pushButton_close->setText("Test Done");
-}
-
-void MainWindow::on_pushButton_gray_clicked()
-{
-    QImage changed_img= gray(*img_origin);
-
-    ui->label_imgFrame->setPixmap(QPixmap::fromImage(changed_img));
-    ui->pushButton_gray->setText("gray");
 }
