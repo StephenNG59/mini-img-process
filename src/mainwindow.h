@@ -22,6 +22,7 @@ public:
 private:
     Ui::MainWindow *ui;
     QString fileName;
+
 private slots:
     // self-defined slots
     void on_actionOpen_Image_clicked();
