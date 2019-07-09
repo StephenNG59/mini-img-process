@@ -14,9 +14,9 @@ Mini image processing widget application built with Qt.
     
     $ git checkout -b [feature-name]
 
-* 进入新建的本地分支：
+* 进入新建的本地分支(如果紧接着上一步，不需要做)：
     
-    $ cd [feature-name]
+    $ git checkout [feature-name]
 
 * edit the codes, add & commit.
 
