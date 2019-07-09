@@ -14,6 +14,7 @@ class MainWindow : public QMainWindow
 {
     Q_OBJECT
     QPixmap *pixmap_GSW;
+    QImage *img_origin;
 
 public:
     explicit MainWindow(QWidget *parent = nullptr);
@@ -27,6 +28,7 @@ private slots:
     // self-defined slots
     void on_actionOpen_Image_clicked();
     void on_pushButton_test_clicked();
+    void on_horizontalSlider_valueChanged(int value);
 };
 
 #endif // MAINWINDOW_H

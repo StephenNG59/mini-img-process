@@ -1,6 +1,7 @@
 #include "img_process.h"
 
-QImage &testFunc(QImage *origin)
+/* testFunc: multiply the origin image by ratio */
+QImage &testFunc(QImage *origin, float ratio/*=0.5*/)
 {
     assert(origin);
 
@@ -11,7 +12,7 @@ QImage &testFunc(QImage *origin)
         for (int j = 0; j < height; j++)
         {
             QRgb rgb = origin->pixel(i, j);
-            int r = 0.5 * qRed(rgb), g = 0.5 * qGreen(rgb), b = 0.5 * qBlue(rgb);
+            int r = ratio * qRed(rgb), g = ratio * qGreen(rgb), b = ratio * qBlue(rgb);
             changed->setPixel(i, j, qRgb(r, g, b));
         }
 

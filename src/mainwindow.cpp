@@ -13,6 +13,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     connect(ui->pushButton_test, SIGNAL(clicked()), this, SLOT(on_pushButton_test_clicked()));
     connect(ui->actionOpen_Image, SIGNAL(triggered()), this, SLOT(on_actionOpen_Image_clicked()));
+    connect(ui->horizontalSlider_test, SIGNAL(valueChanged(int)), this, SLOT(on_horizontalSlider_valueChanged(int)));
 
 }
 
@@ -24,16 +25,25 @@ MainWindow::~MainWindow()
 void MainWindow::on_actionOpen_Image_clicked()
 {
     fileName = QFileDialog::getOpenFileName(this, tr("Open File"), "/home", tr("Images (*.png, *.jpg)"));
+    img_origin = new QImage(fileName);
 
-    QMovie *move = new QMovie(fileName);
-    ui->label_imgFrame->setMovie(move);
-    move->start();
+    QMovie *move_origin = new QMovie(fileName);
+    ui->label_imgFrame->setMovie(move_origin);
+    move_origin->start();
 }
 
 void MainWindow::on_pushButton_test_clicked()
 {
-    QImage *img = new QImage(fileName);
-    QImage changed_img = testFunc(img);
+    QImage changed_img = testFunc(img_origin);
+
+    ui->label_imgFrame->setPixmap(QPixmap::fromImage(changed_img));
+    ui->pushButton_close->setText("Test Done");
+}
+
+void MainWindow::on_horizontalSlider_valueChanged(int value)
+{
+    // value: 0~255
+    QImage changed_img = testFunc(img_origin, float(255 - value) / 255);
 
     ui->label_imgFrame->setPixmap(QPixmap::fromImage(changed_img));
     ui->pushButton_close->setText("Test Done");

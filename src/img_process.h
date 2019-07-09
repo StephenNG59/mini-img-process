@@ -4,6 +4,6 @@
 #include <QPixmap>
 #include <QMovie>
 
-QImage &testFunc(QImage *origin);
+QImage &testFunc(QImage *origin, float ratio=0.5);
 
 #endif // IMG_PROCESS_H
