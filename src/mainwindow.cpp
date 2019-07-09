@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "img_process.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -34,16 +35,17 @@ void MainWindow::on_actionOpen_Image_clicked()
 void MainWindow::on_pushButton_test_clicked()
 {
     QImage *img = new QImage(fileName);
-    QImage *changed_img = new QImage(*img);
-    for (int i = 0; i < 100; i++)
-        for (int j = 0; j < 100; j++)
-        {
-            QRgb rgb = img->pixel(i, j);
-            int r = 0.5 * qRed(rgb), g = 0.5 * qGreen(rgb), b = 0.5 * qBlue(rgb);
-            changed_img->setPixel(i, j, qRgb(r, g, b));
-        }
+//    QImage *changed_img = new QImage(*img);
+//    for (int i = 0; i < 100; i++)
+//        for (int j = 0; j < 100; j++)
+//        {
+//            QRgb rgb = img->pixel(i, j);
+//            int r = 0.5 * qRed(rgb), g = 0.5 * qGreen(rgb), b = 0.5 * qBlue(rgb);
+//            changed_img->setPixel(i, j, qRgb(r, g, b));
+//        }
+    QImage changed_img = testFunc(img);
 
-    ui->label_imgFrame->setPixmap(QPixmap::fromImage(*changed_img));
+    ui->label_imgFrame->setPixmap(QPixmap::fromImage(changed_img));
 //    pixmap_GSW = new QPixmap(QString::fromUtf8("./img/a.png"));
 //    ui->label_imgFrame->setPixmap(*pixmap_GSW);
     ui->pushButton_close->setText("Test Done");
