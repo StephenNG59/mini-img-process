@@ -7,7 +7,9 @@
 
 QImage &lightnessFunc(QImage *origin, float ratio=1.0);
 
-QImage &contrastFunc(QImage *origin, int &ave_gray, float ratio=1.0);
+QImage &contrastFunc(QImage *origin, int &ave_light, float ratio=1.0);
+
+QImage &saturationFunc(QImage *origin, int &ave_light, float ratio=1.0);
 
 QImage &grayFunc(QImage *origin);
 

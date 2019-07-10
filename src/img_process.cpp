@@ -22,7 +22,7 @@ QImage &lightnessFunc(QImage *origin, float ratio/*=1.0*/)
     return *changed;
 }
 
-QImage &contrastFunc(QImage *origin, int &ave_gray, float ratio/*=1.0*/)
+QImage &contrastFunc(QImage *origin, int &ave_light, float ratio/*=1.0*/)
 {
     QImage *changed = new QImage(*origin);
 
@@ -33,10 +33,31 @@ QImage &contrastFunc(QImage *origin, int &ave_gray, float ratio/*=1.0*/)
         QRgb *p_changed = (QRgb *)changed->scanLine(i);
         for (int j = 0; j < width; j++)
         {
-            int r = std::min(255, int(qRed(p_origin[j]) * ratio)),
-                    g = std::min(255, int(qGreen(p_origin[j]) * ratio)),
-                    b = std::min(255, int(qBlue(p_origin[j]) * ratio));
-            p_changed[j] = qRgb(r, g, b);
+            int h, s, l;
+            QColor(p_origin[j]).getHsl(&h, &s, &l);
+            l = clamp(int(ave_light + ratio * (l - ave_light)), 0, 255);
+            p_changed[j] = QColor::fromHsl(h, s, l).rgb();
+        }
+    }
+
+    return *changed;
+}
+
+QImage &saturationFunc(QImage *origin, int &ave_saturation, float ratio/*=1.0*/)
+{
+    QImage *changed = new QImage(*origin);
+
+    int height = origin->height(), width = origin->width();
+    for (int i = 0; i < height; i++)
+    {
+        const QRgb *p_origin = (const QRgb *)origin->constScanLine(i);
+        QRgb *p_changed = (QRgb *)changed->scanLine(i);
+        for (int j = 0; j < width; j++)
+        {
+            int h, s, l;
+            QColor(p_origin[j]).getHsl(&h, &s, &l);
+            s = clamp(int(ave_saturation + ratio * (s - ave_saturation)), 0, 255);
+            p_changed[j] = QColor::fromHsl(h, s, l).rgb();
         }
     }
 
