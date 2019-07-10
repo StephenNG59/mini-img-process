@@ -26,6 +26,7 @@ CONFIG += c++11
 
 SOURCES += \
         img_process.cpp \
+        logindialog.cpp \
         main.cpp \
         mainwindow.cpp
 
@@ -35,9 +36,11 @@ HEADERS += \
         basic.h \
         basic.h \
         img_process.h \
+        logindialog.h \
         mainwindow.h
 
 FORMS += \
+        logindialog.ui \
         mainwindow.ui
 
 # Default rules for deployment.
