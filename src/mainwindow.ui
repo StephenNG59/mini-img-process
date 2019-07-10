@@ -87,7 +87,7 @@
      <string/>
     </property>
     <property name="pixmap">
-     <pixmap>C:/Users/Stephen NG/Pictures/wyc图片/54700.jpg</pixmap>
+     <pixmap>../../../../Stephen NG/Pictures/wyc图片/54700.jpg</pixmap>
     </property>
     <property name="scaledContents">
      <bool>true</bool>
@@ -114,7 +114,7 @@
      <x>0</x>
      <y>0</y>
      <width>1152</width>
-     <height>26</height>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -125,7 +125,15 @@
     <addaction name="actionOpen_Image"/>
     <addaction name="actionSave_Image"/>
    </widget>
+   <widget class="QMenu" name="menuedit">
+    <property name="title">
+     <string>edit</string>
+    </property>
+    <addaction name="actionUndo"/>
+    <addaction name="actionRedo"/>
+   </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuedit"/>
   </widget>
   <action name="actionOpen_Image">
    <property name="text">
@@ -135,6 +143,16 @@
   <action name="actionSave_Image">
    <property name="text">
     <string>Save Image...</string>
+   </property>
+  </action>
+  <action name="actionUndo">
+   <property name="text">
+    <string>Undo</string>
+   </property>
+  </action>
+  <action name="actionRedo">
+   <property name="text">
+    <string>Redo</string>
    </property>
   </action>
  </widget>
