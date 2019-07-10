@@ -48,3 +48,9 @@ void MainWindow::on_horizontalSlider_valueChanged(int value)
     ui->label_imgFrame->setPixmap(QPixmap::fromImage(changed_img));
     ui->pushButton_close->setText("Test Done");
 }
+
+void MainWindow::on_pushButton_help_clicked()
+{
+    QDialog *dlg = new QDialog(this);
+    dlg->show();
+}

@@ -5,6 +5,7 @@
 #include <QFileDialog>
 #include <QPixmap>
 #include <QMovie>
+#include <QDialog>
 
 namespace Ui {
 class MainWindow;
@@ -29,6 +30,7 @@ private slots:
     void on_actionOpen_Image_clicked();
     void on_pushButton_test_clicked();
     void on_horizontalSlider_valueChanged(int value);
+    void on_pushButton_help_clicked();
 };
 
 #endif // MAINWINDOW_H

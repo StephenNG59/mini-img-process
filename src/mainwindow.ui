@@ -106,6 +106,19 @@
      <enum>Qt::Horizontal</enum>
     </property>
    </widget>
+   <widget class="QPushButton" name="pushButton_help">
+    <property name="geometry">
+     <rect>
+      <x>510</x>
+      <y>330</y>
+      <width>75</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>help</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <widget class="QMenuBar" name="menuBar">
@@ -173,7 +186,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>292</x>
-     <y>73</y>
+     <y>70</y>
     </hint>
     <hint type="destinationlabel">
      <x>199</x>
