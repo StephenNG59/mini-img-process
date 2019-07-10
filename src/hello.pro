@@ -31,6 +31,9 @@ SOURCES += \
 
 HEADERS += \
         ../build-hello-Desktop_Qt_5_13_0_MinGW_64_bit-Debug/ui_mainwindow.h \
+        basic.h \
+        basic.h \
+        basic.h \
         img_process.h \
         mainwindow.h
 

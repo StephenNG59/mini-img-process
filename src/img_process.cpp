@@ -1,26 +1,50 @@
 #include "img_process.h"
+#include "basic.h"
 
-/* testFunc: multiply the origin image by ratio */
-QImage &testFunc(QImage *origin, float ratio/*=0.5*/)
+/* lightnessFunc: multiply the origin image by ratio */
+QImage &lightnessFunc(QImage *origin, float ratio/*=1.0*/)
 {
-    assert(origin);
-
     QImage *changed = new QImage(*origin);
 
-    int width = origin->width(), height = origin->height();
-    for (int i = 0; i < width; i++)
-        for (int j = 0; j < height; j++)
+    int height = origin->height(), width = origin->width();
+    for (int i = 0; i < height; i++)
+    {
+        const QRgb *p_origin = (const QRgb *)origin->constScanLine(i);
+        QRgb *p_changed = (QRgb *)changed->scanLine(i);
+        for (int j = 0; j < width; j++)
         {
-            QRgb rgb = origin->pixel(i, j);
-            int r = ratio * qRed(rgb), g = ratio * qGreen(rgb), b = ratio * qBlue(rgb);
-            changed->setPixel(i, j, qRgb(r, g, b));
+            int r = std::min(255, int(qRed(p_origin[j]) * ratio)),
+                    g = std::min(255, int(qGreen(p_origin[j]) * ratio)),
+                    b = std::min(255, int(qBlue(p_origin[j]) * ratio));
+            p_changed[j] = qRgb(r, g, b);
         }
+    }
+    return *changed;
+}
+
+QImage &contrastFunc(QImage *origin, int &ave_gray, float ratio/*=1.0*/)
+{
+    QImage *changed = new QImage(*origin);
+
+    int height = origin->height(), width = origin->width();
+    for (int i = 0; i < height; i++)
+    {
+        const QRgb *p_origin = (const QRgb *)origin->constScanLine(i);
+        QRgb *p_changed = (QRgb *)changed->scanLine(i);
+        for (int j = 0; j < width; j++)
+        {
+            int r = std::min(255, int(qRed(p_origin[j]) * ratio)),
+                    g = std::min(255, int(qGreen(p_origin[j]) * ratio)),
+                    b = std::min(255, int(qBlue(p_origin[j]) * ratio));
+            p_changed[j] = qRgb(r, g, b);
+        }
+    }
 
     return *changed;
 }
 
-/* gray: change the origin image to grayscale */
-QImage &gray( QImage *image )
+/* grayFunc: change the origin image to grayscale */
+QImage &grayFunc( QImage *image )
 {
     int height = image->height();
     int width = image->width();
@@ -35,9 +59,9 @@ QImage &gray( QImage *image )
     case QImage::Format_Indexed8:
         for(int i = 0; i < height; i ++)
         {
-            const uchar *pSrc = (uchar *)image->constScanLine(i);
+            const uchar *pSrc = (const uchar *)image->constScanLine(i);
             uchar *pDest = (uchar *)ret->scanLine(i);
-            memcpy(pDest, pSrc, width);
+            memcpy(pDest, pSrc, size_t(width));
         }
         break;
     case QImage::Format_RGB32:
@@ -45,13 +69,13 @@ QImage &gray( QImage *image )
     case QImage::Format_ARGB32_Premultiplied:
         for(int i = 0; i < height; i ++)
         {
-            const QRgb *pSrc = (QRgb *)image->constScanLine(i);
+            const QRgb *pSrc = (const QRgb *)image->constScanLine(i);
             uchar *pDest = (uchar *)ret->scanLine(i);
 //QRgb *pDest = (QRgb*)image->scanLine(i);
 
             for( int j = 0; j < width; j ++)
             {
-                 pDest[j] = qGray(pSrc[j]);
+                 pDest[j] = uchar(qGray(pSrc[j]));
 //((unsigned char*)&pDest[j])[3] = 56;
             }
         }
