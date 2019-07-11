@@ -18,6 +18,7 @@ public:
 
 private slots:
     void on_loginbtn_clicked();
+    void timerUpdate();
 
 private:
     Ui::LoginDialog *ui;
