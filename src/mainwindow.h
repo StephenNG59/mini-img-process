@@ -41,6 +41,7 @@ private slots:
     void on_pushButton_noFilter_clicked();
     void on_pushButton_gray_clicked();
 
+
 public:
     std::shared_ptr<QImage> getOriginImage() { return this->img_origin; }
     std::shared_ptr<QImage> getAdjustImage() { return this->img_adjusted; }
