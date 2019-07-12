@@ -2,15 +2,23 @@
 #define IMG_PROCESS_H
 
 #include <algorithm>
+#include <memory>
 #include <QPixmap>
 #include <QMovie>
+#include <mainwindow.h>
 
-QImage &lightnessFunc(QImage *origin, float ratio=1.0);
+void updateAdjustedImage(MainWindow *mainWindow, float light, float contrast, float saturation);
 
-QImage &contrastFunc(QImage *origin, int &ave_light, float ratio=1.0);
+void updateFilteredImage(MainWindow *mainWindow, void (*filterFunc)(std::shared_ptr<QImage>, std::shared_ptr<QImage>));
 
-QImage &saturationFunc(QImage *origin, int &ave_light, float ratio=1.0);
+QImage &lightnessFunc(std::shared_ptr<QImage> origin, float ratio=1.0);
 
-QImage &grayFunc(QImage *origin);
+QImage &contrastFunc(std::shared_ptr<QImage> origin, int &ave_light, float ratio=1.0);
+
+QImage &saturationFunc(std::shared_ptr<QImage> origin, int &ave_light, float ratio=1.0);
+
+QImage &grayFunc(std::shared_ptr<QImage> origin);
+
+void grayFunc(std::shared_ptr<QImage> adjust, std::shared_ptr<QImage> filter);
 
 #endif // IMG_PROCESS_H

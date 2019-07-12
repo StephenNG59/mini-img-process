@@ -108,25 +108,6 @@
      <enum>Qt::Horizontal</enum>
     </property>
    </widget>
-   <widget class="QPushButton" name="pushButton_gray">
-    <property name="geometry">
-     <rect>
-      <x>880</x>
-      <y>310</y>
-      <width>93</width>
-      <height>28</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <family>Adobe 黑体 Std R</family>
-      <pointsize>10</pointsize>
-     </font>
-    </property>
-    <property name="text">
-     <string>GrayScale</string>
-    </property>
-   </widget>
    <widget class="QPushButton" name="pushButton_showOrigin">
     <property name="geometry">
      <rect>
@@ -247,17 +228,129 @@
      <enum>Qt::Horizontal</enum>
     </property>
    </widget>
+   <widget class="QWidget" name="widget_filters" native="true">
+    <property name="geometry">
+     <rect>
+      <x>880</x>
+      <y>310</y>
+      <width>431</width>
+      <height>221</height>
+     </rect>
+    </property>
+    <property name="autoFillBackground">
+     <bool>false</bool>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgb(212, 212, 212);</string>
+    </property>
+    <widget class="QPushButton" name="pushButton_gray">
+     <property name="geometry">
+      <rect>
+       <x>160</x>
+       <y>20</y>
+       <width>110</width>
+       <height>30</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Adobe 黑体 Std R</family>
+       <pointsize>10</pointsize>
+      </font>
+     </property>
+     <property name="text">
+      <string>GrayScale</string>
+     </property>
+     <property name="checkable">
+      <bool>true</bool>
+     </property>
+     <property name="autoRepeat">
+      <bool>false</bool>
+     </property>
+     <property name="autoExclusive">
+      <bool>true</bool>
+     </property>
+     <property name="default">
+      <bool>false</bool>
+     </property>
+     <property name="flat">
+      <bool>false</bool>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="pushButton_edge">
+     <property name="geometry">
+      <rect>
+       <x>300</x>
+       <y>20</y>
+       <width>110</width>
+       <height>30</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Adobe 黑体 Std R</family>
+       <pointsize>10</pointsize>
+      </font>
+     </property>
+     <property name="text">
+      <string>Edge Detect</string>
+     </property>
+     <property name="checkable">
+      <bool>true</bool>
+     </property>
+     <property name="autoExclusive">
+      <bool>true</bool>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="pushButton_noFilter">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>20</y>
+       <width>110</width>
+       <height>30</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Adobe 黑体 Std R</family>
+       <pointsize>10</pointsize>
+      </font>
+     </property>
+     <property name="text">
+      <string>No Filter</string>
+     </property>
+     <property name="checkable">
+      <bool>true</bool>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
+     <property name="autoRepeat">
+      <bool>false</bool>
+     </property>
+     <property name="autoExclusive">
+      <bool>true</bool>
+     </property>
+     <property name="default">
+      <bool>false</bool>
+     </property>
+     <property name="flat">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </widget>
    <zorder>label</zorder>
    <zorder>label_hello</zorder>
    <zorder>pushButton_close</zorder>
    <zorder>label_imgFrame</zorder>
    <zorder>horizontalSlider_lightness</zorder>
-   <zorder>pushButton_gray</zorder>
    <zorder>pushButton_showOrigin</zorder>
    <zorder>horizontalSlider_contrast</zorder>
    <zorder>label_2</zorder>
    <zorder>label_3</zorder>
    <zorder>horizontalSlider_saturation</zorder>
+   <zorder>widget_filters</zorder>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <widget class="QMenuBar" name="menuBar">
@@ -300,8 +393,8 @@
    <slot>close()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>292</x>
-     <y>73</y>
+     <x>1230</x>
+     <y>716</y>
     </hint>
     <hint type="destinationlabel">
      <x>199</x>
