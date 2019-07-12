@@ -120,6 +120,16 @@ void MainWindow::on_horizontalSlider_contrast_sliderReleased() { adjustImage(); 
 
 void MainWindow::on_horizontalSlider_saturation_sliderReleased() { adjustImage(); }
 
+void MainWindow::on_pushButton_noFilter_clicked()
+{
+    *pixmap_changed = QPixmap::fromImage((*img_adjusted).scaled(
+                                             this->ui->label_imgFrame->width(),
+                                             this->ui->label_imgFrame->height(),
+                                             Qt::KeepAspectRatio,
+                                             Qt::SmoothTransformation));
+    ui->label_imgFrame->setPixmap(*pixmap_changed);
+}
+
 void MainWindow::on_pushButton_gray_clicked() { filterImage(grayFunc); }
 
 void MainWindow::on_pushButton_showOrigin_pressed()

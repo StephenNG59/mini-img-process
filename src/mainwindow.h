@@ -38,6 +38,7 @@ private slots:
     void on_horizontalSlider_saturation_sliderReleased();
     void on_pushButton_showOrigin_pressed();
     void on_pushButton_showOrigin_released();
+    void on_pushButton_noFilter_clicked();
     void on_pushButton_gray_clicked();
 
 public:
