@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "img_process.h"
+#include "basic.h"
 
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -38,6 +39,35 @@ void MainWindow::resetButtons()
     this->ui->horizontalSlider_saturation->setSliderPosition(50);
 }
 
+void MainWindow::storeImage()
+{
+    *img_origin = QImage(fileName);
+    img_adjusted = std::make_shared<QImage>(*img_origin);
+    img_filtered = std::make_shared<QImage>(*img_origin);
+
+    int height = img_origin->height(), width = img_origin->width(), channel = 4;
+    data_origin = new unsigned char**[height];
+    data_adjusted = new unsigned char**[height];
+    data_filtered = new unsigned char**[height];
+    for (int i = 0; i < height; i++)
+    {
+        const QRgb *p_origin = (const QRgb *)img_origin->constScanLine(i);
+        data_origin[i] = new unsigned char*[width];
+        data_adjusted[i] = new unsigned char*[width];
+        data_filtered[i] = new unsigned char*[width];
+        for (int j = 0; j < width; j++)
+        {
+            data_origin[i][j] = new unsigned char[channel];
+            data_adjusted[i][j] = new unsigned char[channel];
+            data_filtered[i][j] = new unsigned char[channel];
+            data_origin[i][j][0] = data_adjusted[i][j][0] = data_filtered[i][j][0] = (unsigned char)qRed(p_origin[j]);
+            data_origin[i][j][1] = data_adjusted[i][j][1] = data_filtered[i][j][1] = (unsigned char)qGreen(p_origin[j]);
+            data_origin[i][j][2] = data_adjusted[i][j][2] = data_filtered[i][j][2] = (unsigned char)qBlue(p_origin[j]);
+            data_origin[i][j][3] = data_adjusted[i][j][3] = data_filtered[i][j][3] = (unsigned char)qAlpha(p_origin[j]);
+        }
+    }
+}
+
 /* adjustImage(): apply contrast->saturation->light adjustment to filter image */
 void MainWindow::adjustImage()
 {
@@ -63,6 +93,56 @@ void MainWindow::adjustImage()
     ui->pushButton_close->setText("Test Done");
 }
 
+void MainWindow::adjustData()
+{
+    float light = ui->horizontalSlider_lightness->value() / 100.0f + 0.5f,
+            contrast = ui->horizontalSlider_contrast->value() / 100.0f + 0.5f,
+            saturation = ui->horizontalSlider_saturation->value() / 50.0f;
+    int height = this->img_origin->height(), width = this->img_origin->width();
+    int ave_light = this->ave_light, ave_saturation = this->ave_saturation;
+
+    for (int i = 0; i < height; i++)
+    {
+        for (int j = 0; j < width; j++)
+        {
+            int h, s, l;
+            int r = data_origin[i][j][0], g = data_origin[i][j][1], b = data_origin[i][j][2];
+            QColor::fromRgb(r, g, b).getHsl(&h, &s, &l);
+
+            // Origin --> Contrast adjusted --> Saturation adjusted --> Lightness adjusted --> Adjusted
+            // ----------------------------------------------------------------------------------------
+
+            // 1. contrast
+            l = clamp(int(ave_light + contrast * (l - ave_light)), 0, 255);
+            // 2. saturation
+            s = clamp(int(ave_saturation + saturation * (s - ave_saturation)), 0, 255);
+            // 3. lightness
+            QColor::fromHsl(h, s, l).getRgb(&r, &g, &b);
+            r = clamp(int(light * r), 0, 255);
+            g = clamp(int(light * g), 0, 255);
+            b = clamp(int(light * b), 0, 255);
+
+            // results
+            data_adjusted[i][j][0] = (unsigned char)r;
+            data_adjusted[i][j][1] = (unsigned char)g;
+            data_adjusted[i][j][2] = (unsigned char)b;
+        }
+    }
+
+    updateImgFromData(img_adjusted, data_adjusted);
+
+    if (this->ui->pushButton_noFilter->isChecked() == false)
+    {
+        if (this->ui->pushButton_gray->isChecked())
+            updateFilteredImage(this, grayFunc);
+    }
+
+//    updateImgFromData(img_filtered, data_filtered);
+
+    updatePixmapFromImg(pixmap_changed, img_filtered);
+    ui->label_imgFrame->setPixmap(*pixmap_changed);
+}
+
 void MainWindow::filterImage(void (*filter)(std::shared_ptr<QImage>, std::shared_ptr<QImage>))
 {
     updateFilteredImage(this, filter);
@@ -76,6 +156,33 @@ void MainWindow::filterImage(void (*filter)(std::shared_ptr<QImage>, std::shared
     ui->pushButton_close->setText("Test Done");
 }
 
+void MainWindow::filterData(void (*filter)(unsigned char ***, unsigned char ***, int, int), int height, int width)
+{
+    filter(this->data_adjusted, this->data_filtered, height, width);
+}
+
+void MainWindow::updateImgFromData(std::shared_ptr<QImage> img, unsigned char ***data)
+{
+    int height = img->height(), width = img->width();
+    for (int i = 0; i < height; i++)
+    {
+        QRgb *p_img = (QRgb *)img->scanLine(i);
+        for (int j = 0; j < width; j++)
+        {
+            p_img[j] = qRgb(data[i][j][0], data[i][j][1], data[i][j][2]);
+        }
+    }
+}
+
+void MainWindow::updatePixmapFromImg(QPixmap *pixmap, std::shared_ptr<QImage> img)
+{
+    *pixmap = QPixmap::fromImage(img->scaled(
+                                     this->ui->label_imgFrame->width(),
+                                     this->ui->label_imgFrame->height(),
+                                     Qt::KeepAspectRatio,
+                                     Qt::SmoothTransformation));
+}
+
 void MainWindow::on_actionOpen_Image_triggered()
 {
     fileName = QFileDialog::getOpenFileName(this, tr("Open File"), "/home", tr("Images (*.png, *.jpg)"));
@@ -85,10 +192,9 @@ void MainWindow::on_actionOpen_Image_triggered()
 
     ui->label_imgFrame->setScaledContents(false);
 
-    *img_origin = QImage(fileName);
-    img_adjusted = std::make_shared<QImage>(*img_origin);
-    img_filtered = std::make_shared<QImage>(*img_origin);
-    pixmap_origin = new QPixmap(QPixmap::fromImage((*img_adjusted).scaled(
+    storeImage();
+
+    pixmap_origin = new QPixmap(QPixmap::fromImage((*img_origin).scaled(
                                     this->ui->label_imgFrame->width(),
                                     this->ui->label_imgFrame->height(),
                                     Qt::KeepAspectRatio,
@@ -114,24 +220,6 @@ void MainWindow::on_actionOpen_Image_triggered()
     ave_saturation = ave_color.hslSaturation();
 }
 
-void MainWindow::on_horizontalSlider_lightness_sliderReleased() { adjustImage(); }
-
-void MainWindow::on_horizontalSlider_contrast_sliderReleased() { adjustImage(); }
-
-void MainWindow::on_horizontalSlider_saturation_sliderReleased() { adjustImage(); }
-
-void MainWindow::on_pushButton_noFilter_clicked()
-{
-    *pixmap_changed = QPixmap::fromImage(this->img_adjusted->scaled(
-                                             this->ui->label_imgFrame->width(),
-                                             this->ui->label_imgFrame->height(),
-                                             Qt::KeepAspectRatio,
-                                             Qt::SmoothTransformation));
-    this->ui->label_imgFrame->setPixmap(*pixmap_changed);
-}
-
-void MainWindow::on_pushButton_gray_clicked() { filterImage(grayFunc); }
-
 void MainWindow::on_pushButton_showOrigin_pressed()
 {
     ui->label_imgFrame->setPixmap(*pixmap_origin);
@@ -141,3 +229,31 @@ void MainWindow::on_pushButton_showOrigin_released()
 {
     ui->label_imgFrame->setPixmap(*pixmap_changed);
 }
+
+void MainWindow::on_horizontalSlider_lightness_sliderReleased() { adjustData(); }
+
+void MainWindow::on_horizontalSlider_contrast_sliderReleased() { adjustData(); }
+
+void MainWindow::on_horizontalSlider_saturation_sliderReleased() { adjustData(); }
+
+void MainWindow::on_pushButton_noFilter_clicked()
+{
+    updatePixmapFromImg(pixmap_changed, this->img_adjusted);
+//    *pixmap_changed = QPixmap::fromImage(this->img_adjusted->scaled(
+//                                             this->ui->label_imgFrame->width(),
+//                                             this->ui->label_imgFrame->height(),
+//                                             Qt::KeepAspectRatio,
+//                                             Qt::SmoothTransformation));
+    this->ui->label_imgFrame->setPixmap(*pixmap_changed);
+}
+
+void MainWindow::on_pushButton_gray_clicked()
+{
+    /*filterImage(grayFunc);*/
+    filterData(grayFunc, this->img_origin->height(), this->img_origin->width());
+    updateImgFromData(this->img_filtered, this->data_filtered);
+    updatePixmapFromImg(this->pixmap_changed, this->img_filtered);
+    this->ui->label_imgFrame->setPixmap(*pixmap_changed);
+}
+
+void MainWindow::on_pushButton_edge_clicked() { filterImage(edgeFunc); }

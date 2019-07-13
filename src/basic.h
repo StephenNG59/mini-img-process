@@ -18,10 +18,12 @@ int getArrayLen(const T& array)
     return sizeof(array) / sizeof(array[0]);
 }
 
-enum ConvType{
-    CONV_CONSTANT = 0,
-    CONV_REPLICATE = 1
-};
+template<class T>
+void getArraySize(const T& array, int &height, int &width)
+{
+    height = getArrayLen(array);
+    width = getArrayLen(array[0]);
+}
 
 //template<class T>
 //void conv(T *src, T *dst, T *kernel, ConvType=CONV_CONSTANT)
