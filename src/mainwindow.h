@@ -47,7 +47,9 @@ private slots:
     void on_pushButton_showOrigin_released();
     void on_pushButton_noFilter_clicked();
     void on_pushButton_gray_clicked();
-    void on_pushButton_edge_clicked();
+    void on_pushButton_sharpen_clicked();
+    void on_pushButton_smooth_clicked();
+    void on_pushButton_warm_clicked();
 
 public:
     std::shared_ptr<QImage> getOriginImage() { return this->img_origin; }

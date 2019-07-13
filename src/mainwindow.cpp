@@ -40,7 +40,7 @@ void MainWindow::resetButtons()
 
 void MainWindow::storeImage()
 {
-    *img_origin = QImage(fileName);
+    *img_origin = QImage(fileName).scaled(this->ui->label_imgFrame->width(), this->ui->label_imgFrame->height(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
     img_changed = std::make_shared<QImage>(*img_origin);
 
     int height = img_origin->height(), width = img_origin->width(), channel = 4;
@@ -86,14 +86,14 @@ void MainWindow::adjustData()
             // ----------------------------------------------------------------------------------------
 
             // 1. contrast
-            l = clamp(int(ave_light + contrast * (l - ave_light)), 0, 255);
+            l = (int)clamp(ave_light + contrast * (l - ave_light), 0.f, 255.f);
             // 2. saturation
-            s = clamp(int(ave_saturation + saturation * (s - ave_saturation)), 0, 255);
+            s = (int)clamp(ave_saturation + saturation * (s - ave_saturation), 0.f, 255.f);
             // 3. lightness
             QColor::fromHsl(h, s, l).getRgb(&r, &g, &b);
-            r = clamp(int(light * r), 0, 255);
-            g = clamp(int(light * g), 0, 255);
-            b = clamp(int(light * b), 0, 255);
+            r = (int)clamp(light * r, 0.f, 255.f);
+            g = (int)clamp(light * g, 0.f, 255.f);
+            b = (int)clamp(light * b, 0.f, 255.f);
 
             // results
             data_adjusted[i][j][0] = (unsigned char)r;
@@ -108,9 +108,13 @@ void MainWindow::adjustData()
         {
             grayFunc(this->data_adjusted, this->data_filtered, this->img_origin->height(), this->img_origin->width());
         }
-        else if (this->ui->pushButton_edge->isChecked())
+        else if (this->ui->pushButton_sharpen->isChecked())
         {
-            edgeFunc(this->data_adjusted, this->data_filtered, this->img_origin->height(), this->img_origin->width());
+            sharpenFunc(this->data_adjusted, this->data_filtered, this->img_origin->height(), this->img_origin->width());
+        }
+        else if (this->ui->pushButton_smooth->isChecked())
+        {
+            smoothFunc(this->data_adjusted, this->data_filtered, this->img_origin->height(), this->img_origin->width());
         }
     }
 }
@@ -225,8 +229,24 @@ void MainWindow::on_pushButton_gray_clicked()
     this->ui->label_imgFrame->setPixmap(*pixmap_changed);
 }
 
-void MainWindow::on_pushButton_edge_clicked() {
-    edgeFunc(this->data_adjusted, this->data_filtered, this->img_origin->height(), this->img_origin->width());
+void MainWindow::on_pushButton_sharpen_clicked() {
+    sharpenFunc(this->data_adjusted, this->data_filtered, this->img_origin->height(), this->img_origin->width());
+    updateImgFromData(this->img_changed, this->data_filtered);
+    updatePixmapFromImg(this->pixmap_changed, this->img_changed);
+    this->ui->label_imgFrame->setPixmap(*pixmap_changed);
+}
+
+void MainWindow::on_pushButton_smooth_clicked()
+{
+    smoothFunc(this->data_adjusted, this->data_filtered, this->img_origin->height(), this->img_origin->width());
+    updateImgFromData(this->img_changed, this->data_filtered);
+    updatePixmapFromImg(this->pixmap_changed, this->img_changed);
+    this->ui->label_imgFrame->setPixmap(*pixmap_changed);
+}
+
+void MainWindow::on_pushButton_warm_clicked()
+{
+    warmFunc(this->data_adjusted, this->data_filtered, this->img_origin->height(), this->img_origin->width());
     updateImgFromData(this->img_changed, this->data_filtered);
     updatePixmapFromImg(this->pixmap_changed, this->img_changed);
     this->ui->label_imgFrame->setPixmap(*pixmap_changed);
