@@ -1,177 +1,7 @@
 #include "img_process.h"
 #include "basic.h"
 
-
-void updateAdjustedImage(MainWindow *mainWindow, float light, float contrast, float saturation)
-{
-    std::shared_ptr<QImage> origin = mainWindow->getOriginImage(), adjusted = mainWindow->getAdjustImage();
-    int height = origin->height(), width = origin->width();
-    int ave_light = mainWindow->getAveLight(), ave_saturation = mainWindow->getAveSaturation();
-
-    for (int i = 0; i < height; i++)
-    {
-        const QRgb *p_origin = (const QRgb *)origin->constScanLine(i);
-        QRgb *p_adjusted = (QRgb *)adjusted->scanLine(i);
-        for (int j = 0; j < width; j++)
-        {
-            int r, g, b, h, s, l;
-            QColor(p_origin[j]).getHsl(&h, &s, &l);
-
-
-            // Origin --> Contrast adjusted --> Saturation adjusted --> Lightness adjusted --> Adjusted
-            // ----------------------------------------------------------------------------------------
-
-            // 1. contrast
-            l = clamp(int(ave_light + contrast * (l - ave_light)), 0, 255);
-            // 2. saturation
-            s = clamp(int(ave_saturation + saturation * (s - ave_saturation)), 0, 255);
-            // 3. lightness
-            QColor::fromHsl(h, s, l).getRgb(&r, &g, &b);
-            r = clamp(int(light * r), 0, 255);
-            g = clamp(int(light * g), 0, 255);
-            b = clamp(int(light * b), 0, 255);
-            p_adjusted[j] = qRgb(r, g, b);
-
-        }
-    }
-}
-
-void updateFilteredImage(MainWindow *mainWindow, void (*filterFunc)(std::shared_ptr<QImage>, std::shared_ptr<QImage>))
-{
-    std::shared_ptr<QImage> adjust = mainWindow->getAdjustImage(), filter = mainWindow->getFilterImage();
-
-    filterFunc(adjust, filter);
-}
-
-void updateFilteredData(MainWindow *mainWindow, void (*filterFunc)(unsigned char ***, unsigned char ***))
-{
-    unsigned char ***adjust = mainWindow->getAdjustData(), ***filter = mainWindow->getFilterData();
-
-    filterFunc(adjust, filter);
-}
-
-/*
-// lightnessFunc: multiply the origin image by ratio
-QImage &lightnessFunc(std::shared_ptr<QImage> origin, float ratio=1.0)
-{
-    QImage *changed = new QImage(*origin);
-
-    int height = origin->height(), width = origin->width();
-    for (int i = 0; i < height; i++)
-    {
-        const QRgb *p_origin = (const QRgb *)origin->constScanLine(i);
-        QRgb *p_changed = (QRgb *)changed->scanLine(i);
-        for (int j = 0; j < width; j++)
-        {
-            int r = std::min(255, int(qRed(p_origin[j]) * ratio)),
-                    g = std::min(255, int(qGreen(p_origin[j]) * ratio)),
-                    b = std::min(255, int(qBlue(p_origin[j]) * ratio));
-            p_changed[j] = qRgb(r, g, b);
-        }
-    }
-    return *changed;
-}
-
-QImage &contrastFunc(std::shared_ptr<QImage> origin, int &ave_light, float ratio)
-{
-    QImage *changed = new QImage(*origin);
-
-    int height = origin->height(), width = origin->width();
-    for (int i = 0; i < height; i++)
-    {
-        const QRgb *p_origin = (const QRgb *)origin->constScanLine(i);
-        QRgb *p_changed = (QRgb *)changed->scanLine(i);
-        for (int j = 0; j < width; j++)
-        {
-            int h, s, l;
-            QColor(p_origin[j]).getHsl(&h, &s, &l);
-            l = clamp(int(ave_light + ratio * (l - ave_light)), 0, 255);
-            p_changed[j] = QColor::fromHsl(h, s, l).rgb();
-        }
-    }
-
-    return *changed;
-}
-
-QImage &saturationFunc(std::shared_ptr<QImage> origin, int &ave_saturation, float ratio)
-{
-    QImage *changed = new QImage(*origin);
-
-    int height = origin->height(), width = origin->width();
-    for (int i = 0; i < height; i++)
-    {
-        const QRgb *p_origin = (const QRgb *)origin->constScanLine(i);
-        QRgb *p_changed = (QRgb *)changed->scanLine(i);
-        for (int j = 0; j < width; j++)
-        {
-            int h, s, l;
-            QColor(p_origin[j]).getHsl(&h, &s, &l);
-            s = clamp(int(ave_saturation + ratio * (s - ave_saturation)), 0, 255);
-            p_changed[j] = QColor::fromHsl(h, s, l).rgb();
-        }
-    }
-
-    return *changed;
-}*/
-
 /* grayFunc: change the origin image to grayscale */
-QImage &grayFunc( std::shared_ptr<QImage> image )
-{
-    int height = image->height();
-    int width = image->width();
-    QImage *ret = new QImage(width, height, QImage::Format_Indexed8);
-    ret->setColorCount(256);
-    for(int i = 0; i < 256; i++)
-    {
-        ret->setColor(i, qRgb(i, i, i));
-    }
-    switch(image->format())
-    {
-    case QImage::Format_Indexed8:
-        for(int i = 0; i < height; i ++)
-        {
-            const uchar *pSrc = (const uchar *)image->constScanLine(i);
-            uchar *pDest = (uchar *)ret->scanLine(i);
-            memcpy(pDest, pSrc, size_t(width));
-        }
-        break;
-    case QImage::Format_RGB32:
-    case QImage::Format_ARGB32:
-    case QImage::Format_ARGB32_Premultiplied:
-        for(int i = 0; i < height; i ++)
-        {
-            const QRgb *pSrc = (const QRgb *)image->constScanLine(i);
-            uchar *pDest = (uchar *)ret->scanLine(i);
-//QRgb *pDest = (QRgb*)image->scanLine(i);
-
-            for( int j = 0; j < width; j ++)
-            {
-                 pDest[j] = uchar(qGray(pSrc[j]));
-//((unsigned char*)&pDest[j])[3] = 56;
-            }
-        }
-        break;
-    default:
-        break;
-    }
-    return *ret;
-}
-
-void grayFunc(std::shared_ptr<QImage> adjust, std::shared_ptr<QImage> filter)
-{
-    int height = adjust->height(), width = adjust->width();
-    for (int i = 0; i < height; i++)
-    {
-        const QRgb *p_adjusted = (const QRgb *)adjust->constScanLine(i);
-        QRgb *p_filtered = (QRgb *)filter->scanLine(i);
-        for (int j = 0; j < width; j++)
-        {
-            int gray = qGray(p_adjusted[j]);
-            p_filtered[j] = qRgb(gray, gray, gray);
-        }
-    }
-}
-
 void grayFunc(unsigned char ***adjust, unsigned char ***filter, int height, int width)
 {
     int r, g, b, gray;
@@ -189,65 +19,107 @@ void grayFunc(unsigned char ***adjust, unsigned char ***filter, int height, int 
     }
 }
 
-void edgeFunc(std::shared_ptr<QImage> adjust, std::shared_ptr<QImage> filter)
+void edgeFunc(unsigned char ***adjust, unsigned char ***filter, int height, int width)
 {
-    int height = adjust->height(), width = adjust->width();
-    const QRgb *p_adjusted_u, *p_adjusted_c = (const QRgb *)adjust->constScanLine(0), *p_adjusted_d;
-    QRgb mat[3][3],
-            &ul = mat[0][0], &uc = mat[0][1], &ur = mat[0][2],
-            &cl = mat[1][0], &cc = mat[1][1], &cr = mat[1][2],
-            &dl = mat[2][0], &dc = mat[2][1], &dr = mat[2][2];
-
-//    float kernel[3][3] = {{0, -1, 0}, {-1, 5, -1}, {0, -1, 0}};
-    float kernel[3][3] = {{0.1f, 0.1f, 0.1f}, {0.1f, -0.9f, 0.1f}, {0.1f, 0.1f, 0.1f}};
-
-    for (int i = 0; i < height; i++)
+    float **kernel = new float*[7];
+    float k[7][7] = {
+        {-0.1f, -0.1f, -0.1f, -0.1f, -0.1f, -0.1f, -0.1f},
+        {-0.1f, -0.1f, -0.1f, -0.1f, -0.1f, -0.1f, -0.1f},
+        {-0.1f, -0.1f, -0.1f, -0.1f, -0.1f, -0.1f, -0.1f},
+        {-0.1f, -0.1f, -0.1f, +5.8f, -0.1f, -0.1f, -0.1f},
+        {-0.1f, -0.1f, -0.1f, -0.1f, -0.1f, -0.1f, -0.1f},
+        {-0.1f, -0.1f, -0.1f, -0.1f, -0.1f, -0.1f, -0.1f},
+        {-0.1f, -0.1f, -0.1f, -0.1f, -0.1f, -0.1f, -0.1f}};
+    for (int i = 0; i < 7; i++)
     {
-        p_adjusted_u = p_adjusted_c;
-        p_adjusted_c = (const QRgb *)adjust->constScanLine(i);
-        p_adjusted_d = (i == height-1) ? p_adjusted_c : (const QRgb *)adjust->constScanLine(i+1);
-        QRgb *p_filtered = (QRgb *)filter->scanLine(i);
-        for (int j = 0; j < width; j++)
+        kernel[i] = new float[7];
+        for (int j = 0; j < 7; j++)
+            kernel[i][j] = k[i][j];
+    }
+
+    convolve2D(adjust, filter, kernel, height, width, 7, 7);
+}
+
+void smoothFunc(unsigned char ***adjust, unsigned char ***filter, int height, int width)
+{
+    float **kernel = new float*[7];
+    float k[7][7] = {
+        {0.02f, 0.02f, 0.02f, 0.02f, 0.02f, 0.02f, 0.02f},
+        {0.02f, 0.02f, 0.02f, 0.02f, 0.02f, 0.02f, 0.02f},
+        {0.02f, 0.02f, 0.02f, 0.02f, 0.02f, 0.02f, 0.02f},
+        {0.02f, 0.02f, 0.02f, 0.04f, 0.02f, 0.02f, 0.02f},
+        {0.02f, 0.02f, 0.02f, 0.02f, 0.02f, 0.02f, 0.02f},
+        {0.02f, 0.02f, 0.02f, 0.02f, 0.02f, 0.02f, 0.02f},
+        {0.02f, 0.02f, 0.02f, 0.02f, 0.02f, 0.02f, 0.02f}};
+    for (int i = 0; i < 7; i++)
+    {
+        kernel[i] = new float[7];
+        for (int j = 0; j < 7; j++)
+            kernel[i][j] = k[i][j];
+    }
+
+    convolve2D(adjust, filter, kernel, height, width, 7, 7);
+}
+
+void convolve2D(unsigned char ***src, unsigned char ***dst, float **kernel, int src_h, int src_w, int ker_h, int ker_w)
+{
+    assert(ker_h % 2 == 1 && ker_w % 2 == 1);
+
+    float t1 = clock();
+    // padding (use replicate)
+    int pad_h = src_h + ker_h - 1, pad_w = src_w + ker_w - 1;
+    unsigned char ***pad = new unsigned char **[pad_h];
+    for (int i = 0; i < pad_h; i++)
+    {
+        pad[i] = new unsigned char *[pad_w];
+        for (int j = 0; j < pad_w; j++)
         {
-            ul = j == 0 ? p_adjusted_u[0] : p_adjusted_u[j-1];
-            cl = j == 0 ? p_adjusted_c[0] : p_adjusted_c[j-1];
-            dl = j == 0 ? p_adjusted_d[0] : p_adjusted_d[j-1];
-
-            ur = j == width-1 ? p_adjusted_u[j] : p_adjusted_u[j+1];
-            cr = j == width-1 ? p_adjusted_c[j] : p_adjusted_c[j+1];
-            dr = j == width-1 ? p_adjusted_d[j] : p_adjusted_d[j+1];
-
-            uc = p_adjusted_u[j];
-            cc = p_adjusted_c[j];
-            dc = p_adjusted_d[j];
-
-            int r, g, b;
-            conv3x3(mat, kernel, &r, &g, &b);
-            p_filtered[j] = qRgb(r, g, b);
+            pad[i][j] = new unsigned char[4];
+            for (int k = 0; k < 4; k++)
+            {
+//                pad[i][j][k] = src[std::max(i-ker_h/2, 0)][std::max(j-ker_w/2, 0)][k];
+                pad[i][j][k] = src[clamp(i - ker_h/2, 0, src_h-1)][clamp(j - ker_w/2, 0, src_w-1)][k];
+            }
         }
     }
-}
 
-void conv3x3(QRgb mat[3][3], float kernel[3][3], int *r, int *g, int *b)
-{
-    int rr = 0, gg = 0, bb = 0;
-    for (int i = 0; i < 3; i++)
-        for (int j = 0; j < 3; j++)
+    std::cout << "here#121: time used: " << (clock() - t1) / 1000.f << std::endl;
+    t1 = clock();
+
+    // convolve 2D (kernel is same for all color channels)
+    for (int i = 0; i < src_h; i++)
+    {
+        for (int j = 0; j < src_w; j++)
         {
-            rr += int(kernel[i][j] * qRed(mat[i][j]));
-            gg += int(kernel[i][j] * qGreen(mat[i][j]));
-            bb += int(kernel[i][j] * qBlue(mat[i][j]));
+            int r = 0, g = 0, b = 0, a = 0;
+            for (int m = 0; m < ker_h; m++)
+            {
+                for (int n = 0; n < ker_w; n++)
+                {
+                    r += pad[i+m][j+n][0] * kernel[m][n];
+                    g += pad[i+m][j+n][1] * kernel[m][n];
+                    b += pad[i+m][j+n][2] * kernel[m][n];
+//                    std::cout << i << " " << j << " " << m << " " << n << std::endl;
+//                    a += pad[i+m][j+n][3] * kernel[m][n];
+                }
+            }
+            dst[i][j][0] = (unsigned char)clamp(r, 0, 255);
+            dst[i][j][1] = (unsigned char)clamp(g, 0, 255);
+            dst[i][j][2] = (unsigned char)clamp(b, 0, 255);
+//            dst[i][j][3] = (unsigned char)clamp(a, 0, 255);
         }
-    *r = clamp(rr, 0, 255);
-    *g = clamp(gg, 0, 255);
-    *b = clamp(bb, 0, 255);
-}
+    }
 
-void qConv(QImage *src, QImage *dst, float **kernel)
-{
-    // get sizes
-    int s_height = src->height(), s_width = src->width(), k_height, k_width;
-    getArraySize(kernel, k_height, k_width);
+    std::cout << "here#122: time used: " << (clock() - t1) / 1000.f << std::endl;
 
-//    src->bits()
+    for (int i = 0; i < pad_h; i++)
+    {
+        for (int j = 0; j < pad_w; j++)
+        {
+            delete [] pad[i][j];
+
+        }
+        delete [] pad[i];
+    }
+    delete [] pad;
 }

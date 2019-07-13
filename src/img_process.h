@@ -3,30 +3,18 @@
 
 #include <algorithm>
 #include <memory>
+#include <time.h>
+
 #include <QPixmap>
 #include <QMovie>
 #include <mainwindow.h>
 
-void updateAdjustedImage(MainWindow *mainWindow, float light, float contrast, float saturation);
-
-void updateFilteredImage(MainWindow *mainWindow, void (*filterFunc)(std::shared_ptr<QImage>, std::shared_ptr<QImage>));
-
-void updateFilteredData(MainWindow *mainWindow, void (*filterFunc)(unsigned char ***, unsigned char ***));
-
-QImage &lightnessFunc(std::shared_ptr<QImage> origin, float ratio=1.0);
-
-QImage &contrastFunc(std::shared_ptr<QImage> origin, int &ave_light, float ratio=1.0);
-
-QImage &saturationFunc(std::shared_ptr<QImage> origin, int &ave_light, float ratio=1.0);
-
-QImage &grayFunc(std::shared_ptr<QImage> origin);
-
-void grayFunc(std::shared_ptr<QImage> adjust, std::shared_ptr<QImage> filter);
-
 void grayFunc(unsigned char ***adjust, unsigned char ***filter, int height, int width);
 
-void edgeFunc(std::shared_ptr<QImage> adjust, std::shared_ptr<QImage> filter);
+void edgeFunc(unsigned char ***adjust, unsigned char ***filter, int height, int width);
 
-void conv3x3(QRgb mat[3][3], float kernel[3][3], int *r, int *g, int *b);
+void smoothFunc(unsigned char ***adjust, unsigned char ***filter, int height, int width);
+
+void convolve2D(unsigned char ***src, unsigned char ***dst, float **kernel, int src_h, int src_w, int ker_h, int ker_w);
 
 #endif // IMG_PROCESS_H

@@ -11,8 +11,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
 
     img_origin = (std::make_shared<QImage>(QString::fromUtf8("./img/a.png")));
-    img_adjusted = (std::make_shared<QImage>(*img_origin));
-    img_filtered = (std::make_shared<QImage>(*img_origin));
+    img_changed = (std::make_shared<QImage>(*img_origin));
 
     // With proper names, belows will result in connected-twice.
     /*
@@ -42,8 +41,7 @@ void MainWindow::resetButtons()
 void MainWindow::storeImage()
 {
     *img_origin = QImage(fileName);
-    img_adjusted = std::make_shared<QImage>(*img_origin);
-    img_filtered = std::make_shared<QImage>(*img_origin);
+    img_changed = std::make_shared<QImage>(*img_origin);
 
     int height = img_origin->height(), width = img_origin->width(), channel = 4;
     data_origin = new unsigned char**[height];
@@ -66,31 +64,6 @@ void MainWindow::storeImage()
             data_origin[i][j][3] = data_adjusted[i][j][3] = data_filtered[i][j][3] = (unsigned char)qAlpha(p_origin[j]);
         }
     }
-}
-
-/* adjustImage(): apply contrast->saturation->light adjustment to filter image */
-void MainWindow::adjustImage()
-{
-    float light = ui->horizontalSlider_lightness->value() / 100.0f + 0.5f,
-            contrast = ui->horizontalSlider_contrast->value() / 100.0f + 0.5f,
-            saturation = ui->horizontalSlider_saturation->value() / 50.0f;
-
-    updateAdjustedImage(this, light, contrast, saturation);
-    *img_filtered = *img_adjusted;
-
-    if (this->ui->pushButton_noFilter->isChecked() == false)
-    {
-        if (this->ui->pushButton_gray->isChecked())
-            updateFilteredImage(this, grayFunc);
-    }
-
-    *pixmap_changed = QPixmap::fromImage((*img_filtered).scaled(
-                                             this->ui->label_imgFrame->width(),
-                                             this->ui->label_imgFrame->height(),
-                                             Qt::KeepAspectRatio,
-                                             Qt::SmoothTransformation));
-    ui->label_imgFrame->setPixmap(*pixmap_changed);
-    ui->pushButton_close->setText("Test Done");
 }
 
 void MainWindow::adjustData()
@@ -129,36 +102,22 @@ void MainWindow::adjustData()
         }
     }
 
-    updateImgFromData(img_adjusted, data_adjusted);
-
     if (this->ui->pushButton_noFilter->isChecked() == false)
     {
         if (this->ui->pushButton_gray->isChecked())
-            updateFilteredImage(this, grayFunc);
+        {
+            grayFunc(this->data_adjusted, this->data_filtered, this->img_origin->height(), this->img_origin->width());
+        }
+        else if (this->ui->pushButton_edge->isChecked())
+        {
+            edgeFunc(this->data_adjusted, this->data_filtered, this->img_origin->height(), this->img_origin->width());
+        }
     }
-
-//    updateImgFromData(img_filtered, data_filtered);
-
-    updatePixmapFromImg(pixmap_changed, img_filtered);
-    ui->label_imgFrame->setPixmap(*pixmap_changed);
 }
 
-void MainWindow::filterImage(void (*filter)(std::shared_ptr<QImage>, std::shared_ptr<QImage>))
+void MainWindow::filterData(void (*filterFunc)(unsigned char ***, unsigned char ***, int, int), int height, int width)
 {
-    updateFilteredImage(this, filter);
-
-    *pixmap_changed = QPixmap::fromImage((*img_filtered).scaled(
-                                             this->ui->label_imgFrame->width(),
-                                             this->ui->label_imgFrame->height(),
-                                             Qt::KeepAspectRatio,
-                                             Qt::SmoothTransformation));
-    ui->label_imgFrame->setPixmap(*pixmap_changed);
-    ui->pushButton_close->setText("Test Done");
-}
-
-void MainWindow::filterData(void (*filter)(unsigned char ***, unsigned char ***, int, int), int height, int width)
-{
-    filter(this->data_adjusted, this->data_filtered, height, width);
+    filterFunc(this->data_adjusted, this->data_filtered, height, width);
 }
 
 void MainWindow::updateImgFromData(std::shared_ptr<QImage> img, unsigned char ***data)
@@ -230,30 +189,45 @@ void MainWindow::on_pushButton_showOrigin_released()
     ui->label_imgFrame->setPixmap(*pixmap_changed);
 }
 
-void MainWindow::on_horizontalSlider_lightness_sliderReleased() { adjustData(); }
+void MainWindow::on_horizontalSlider_lightness_sliderReleased() {
+    adjustData();
+    updateImgFromData(img_changed, this->ui->pushButton_noFilter->isChecked() ? data_adjusted : data_filtered);
+    updatePixmapFromImg(pixmap_changed, img_changed);
+    ui->label_imgFrame->setPixmap(*pixmap_changed);
+}
 
-void MainWindow::on_horizontalSlider_contrast_sliderReleased() { adjustData(); }
+void MainWindow::on_horizontalSlider_contrast_sliderReleased() {
+    adjustData();
+    updateImgFromData(img_changed, this->ui->pushButton_noFilter->isChecked() ? data_adjusted : data_filtered);
+    updatePixmapFromImg(pixmap_changed, img_changed);
+    ui->label_imgFrame->setPixmap(*pixmap_changed);
+}
 
-void MainWindow::on_horizontalSlider_saturation_sliderReleased() { adjustData(); }
+void MainWindow::on_horizontalSlider_saturation_sliderReleased() {
+    adjustData();
+    updateImgFromData(img_changed, this->ui->pushButton_noFilter->isChecked() ? data_adjusted : data_filtered);
+    updatePixmapFromImg(pixmap_changed, img_changed);
+    ui->label_imgFrame->setPixmap(*pixmap_changed);
+}
 
 void MainWindow::on_pushButton_noFilter_clicked()
 {
-    updatePixmapFromImg(pixmap_changed, this->img_adjusted);
-//    *pixmap_changed = QPixmap::fromImage(this->img_adjusted->scaled(
-//                                             this->ui->label_imgFrame->width(),
-//                                             this->ui->label_imgFrame->height(),
-//                                             Qt::KeepAspectRatio,
-//                                             Qt::SmoothTransformation));
+    updateImgFromData(this->img_changed, this->data_adjusted);
+    updatePixmapFromImg(pixmap_changed, this->img_changed);
     this->ui->label_imgFrame->setPixmap(*pixmap_changed);
 }
 
 void MainWindow::on_pushButton_gray_clicked()
 {
-    /*filterImage(grayFunc);*/
-    filterData(grayFunc, this->img_origin->height(), this->img_origin->width());
-    updateImgFromData(this->img_filtered, this->data_filtered);
-    updatePixmapFromImg(this->pixmap_changed, this->img_filtered);
+    grayFunc(this->data_adjusted, this->data_filtered, this->img_origin->height(), this->img_origin->width());
+    updateImgFromData(this->img_changed, this->data_filtered);
+    updatePixmapFromImg(this->pixmap_changed, this->img_changed);
     this->ui->label_imgFrame->setPixmap(*pixmap_changed);
 }
 
-void MainWindow::on_pushButton_edge_clicked() { filterImage(edgeFunc); }
+void MainWindow::on_pushButton_edge_clicked() {
+    edgeFunc(this->data_adjusted, this->data_filtered, this->img_origin->height(), this->img_origin->width());
+    updateImgFromData(this->img_changed, this->data_filtered);
+    updatePixmapFromImg(this->pixmap_changed, this->img_changed);
+    this->ui->label_imgFrame->setPixmap(*pixmap_changed);
+}

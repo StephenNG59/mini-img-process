@@ -2,6 +2,9 @@
 #define MAINWINDOW_H
 
 #include <memory>
+#include <iostream>
+#include <time.h>
+
 #include <QMainWindow>
 #include <QFileDialog>
 #include <QPixmap>
@@ -16,7 +19,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
     QString fileName;
     QPixmap *pixmap_GSW;
-    std::shared_ptr<QImage> img_origin, img_adjusted, img_filtered;
+    std::shared_ptr<QImage> img_origin, img_changed;
     unsigned char ***data_origin, ***data_adjusted, ***data_filtered;
     QPixmap *pixmap_origin, *pixmap_changed;
 
@@ -29,9 +32,7 @@ private:
     int ave_r = 0, ave_g = 0, ave_b = 0, ave_light = 0, ave_saturation = 0;
     void resetButtons();
     void storeImage();
-    void adjustImage();
     void adjustData();
-    void filterImage(void (*filter)(std::shared_ptr<QImage>, std::shared_ptr<QImage>));
     void filterData(void (*filter)(unsigned char ***, unsigned char ***, int, int), int height, int width);
     void updateImgFromData(std::shared_ptr<QImage> img, unsigned char ***data);
     void updatePixmapFromImg(QPixmap *pixmap, std::shared_ptr<QImage> img);
@@ -50,8 +51,7 @@ private slots:
 
 public:
     std::shared_ptr<QImage> getOriginImage() { return this->img_origin; }
-    std::shared_ptr<QImage> getAdjustImage() { return this->img_adjusted; }
-    std::shared_ptr<QImage> getFilterImage() { return this->img_filtered; }
+    std::shared_ptr<QImage> getChangedImage() { return this->img_changed; }
     unsigned char *** getOriginData() { return this->data_origin; }
     unsigned char *** getAdjustData() { return this->data_adjusted; }
     unsigned char *** getFilterData() { return this->data_filtered; }
