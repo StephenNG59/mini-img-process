@@ -1,6 +1,171 @@
 #include "img_process.h"
 #include "basic.h"
 
+void convolve2D(unsigned char ***src, unsigned char ***dst, float **kernel, int src_h, int src_w, int ker_h, int ker_w)
+{
+    assert(ker_h % 2 == 1 && ker_w % 2 == 1);
+
+    float t1 = clock();
+    // padding (use replicate)
+    int pad_h = src_h + ker_h - 1, pad_w = src_w + ker_w - 1;
+    unsigned char ***pad = new unsigned char **[pad_h];
+    for (int i = 0; i < pad_h; i++)
+    {
+        pad[i] = new unsigned char *[pad_w];
+        for (int j = 0; j < pad_w; j++)
+        {
+            pad[i][j] = new unsigned char[4];
+            for (int k = 0; k < 4; k++)
+            {
+//                pad[i][j][k] = src[std::max(i-ker_h/2, 0)][std::max(j-ker_w/2, 0)][k];
+                pad[i][j][k] = src[clamp(i - ker_h/2, 0, src_h-1)][clamp(j - ker_w/2, 0, src_w-1)][k];
+            }
+        }
+    }
+
+    std::cout << "here#121: time used: " << (clock() - t1) / 1000.f << std::endl;
+    t1 = clock();
+
+    // convolve 2D (kernel is same for all color channels)
+    for (int i = 0; i < src_h; i++)
+    {
+        for (int j = 0; j < src_w; j++)
+        {
+            float r = 0, g = 0, b = 0, a = 0;
+            for (int m = 0; m < ker_h; m++)
+            {
+                for (int n = 0; n < ker_w; n++)
+                {
+                    r += pad[i+m][j+n][0] * kernel[m][n];
+                    g += pad[i+m][j+n][1] * kernel[m][n];
+                    b += pad[i+m][j+n][2] * kernel[m][n];
+//                    std::cout << i << " " << j << " " << m << " " << n << std::endl;
+//                    a += pad[i+m][j+n][3] * kernel[m][n];
+                }
+            }
+            dst[i][j][0] = (unsigned char)clamp(r, 0.f, 255.f);
+            dst[i][j][1] = (unsigned char)clamp(g, 0.f, 255.f);
+            dst[i][j][2] = (unsigned char)clamp(b, 0.f, 255.f);
+//            dst[i][j][3] = (unsigned char)clamp(a, 0, 255);
+        }
+    }
+
+    std::cout << "here#122: time used: " << (clock() - t1) / 1000.f << std::endl;
+
+    for (int i = 0; i < pad_h; i++)
+    {
+        for (int j = 0; j < pad_w; j++)
+        {
+            delete [] pad[i][j];
+        }
+        delete [] pad[i];
+    }
+    delete [] pad;
+}
+
+void convolve2D(unsigned char **src, unsigned char **dst, float **kernel, int src_h, int src_w, int ker_h, int ker_w)
+{
+    assert(ker_h % 2 == 1 && ker_w % 2 == 1);
+
+    // padding (use replicate)
+    int pad_h = src_h + ker_h - 1, pad_w = src_w + ker_w - 1;
+    unsigned char **pad = new unsigned char *[pad_h];
+    for (int i = 0; i < pad_h; i++)
+    {
+        pad[i] = new unsigned char [pad_w];
+        for (int j = 0; j < pad_w; j++)
+        {
+            pad[i][j] = src[clamp(i - ker_h/2, 0, src_h-1)][clamp(j - ker_w/2, 0, src_w-1)];
+        }
+    }
+
+    // convolve 2D (kernel is same for all color channels)
+    for (int i = 0; i < src_h; i++)
+    {
+        for (int j = 0; j < src_w; j++)
+        {
+            float gray = 0;
+            for (int m = 0; m < ker_h; m++)
+            {
+                for (int n = 0; n < ker_w; n++)
+                {
+                    gray += pad[i+m][j+n] * kernel[m][n];
+                }
+            }
+            dst[i][j] = (unsigned char)clamp(gray, 0.f, 255.f);
+        }
+    }
+
+    for (int i = 0; i < pad_h; i++)
+    {
+        delete [] pad[i];
+    }
+    delete [] pad;
+}
+
+void convolve3D(unsigned char ***src, unsigned char ***dst, float ***kernel, int src_h, int src_w, int ker_h, int ker_w)
+{
+    assert(ker_h % 2 == 1 && ker_w % 2 == 1);
+
+    float t1 = clock();
+    // padding (use replicate)
+    int pad_h = src_h + ker_h - 1, pad_w = src_w + ker_w - 1;
+    unsigned char ***pad = new unsigned char **[pad_h];
+    for (int i = 0; i < pad_h; i++)
+    {
+        pad[i] = new unsigned char *[pad_w];
+        for (int j = 0; j < pad_w; j++)
+        {
+            pad[i][j] = new unsigned char[4];
+            for (int k = 0; k < 4; k++)
+            {
+//                pad[i][j][k] = src[std::max(i-ker_h/2, 0)][std::max(j-ker_w/2, 0)][k];
+                pad[i][j][k] = src[clamp(i - ker_h/2, 0, src_h-1)][clamp(j - ker_w/2, 0, src_w-1)][k];
+            }
+        }
+    }
+
+    std::cout << "here#121: time used: " << (clock() - t1) / 1000.f << std::endl;
+    t1 = clock();
+
+    // convolve 2D (kernel is same for all color channels)
+    for (int i = 0; i < src_h; i++)
+    {
+        for (int j = 0; j < src_w; j++)
+        {
+            float r = 0, g = 0, b = 0, a = 0;
+            for (int m = 0; m < ker_h; m++)
+            {
+                for (int n = 0; n < ker_w; n++)
+                {
+                    r += pad[i+m][j+n][0] * kernel[0][m][n];
+                    g += pad[i+m][j+n][1] * kernel[1][m][n];
+                    b += pad[i+m][j+n][2] * kernel[2][m][n];
+//                    std::cout << i << " " << j << " " << m << " " << n << std::endl;
+//                    a += pad[i+m][j+n][3] * kernel[m][n];
+                }
+            }
+            dst[i][j][0] = (unsigned char)clamp(r, 0.f, 255.f);
+            dst[i][j][1] = (unsigned char)clamp(g, 0.f, 255.f);
+            dst[i][j][2] = (unsigned char)clamp(b, 0.f, 255.f);
+//            dst[i][j][3] = (unsigned char)clamp(a, 0, 255);
+        }
+    }
+
+    std::cout << "here#122: time used: " << (clock() - t1) / 1000.f << std::endl;
+
+    for (int i = 0; i < pad_h; i++)
+    {
+        for (int j = 0; j < pad_w; j++)
+        {
+            delete [] pad[i][j];
+
+        }
+        delete [] pad[i];
+    }
+    delete [] pad;
+}
+
 /* grayFunc: change the origin image to grayscale */
 void grayFunc(unsigned char ***adjust, unsigned char ***filter, int height, int width)
 {
@@ -85,128 +250,63 @@ void warmFunc(unsigned char ***adjust, unsigned char ***filter, int height, int 
     convolve3D(adjust, filter, kernel, height, width, 1, 1);
 }
 
-void convolve2D(unsigned char ***src, unsigned char ***dst, float **kernel, int src_h, int src_w, int ker_h, int ker_w)
+void sketchFunc(unsigned char ***adjust, unsigned char ***filter, int height, int width)
 {
-    assert(ker_h % 2 == 1 && ker_w % 2 == 1);
-
-    float t1 = clock();
-    // padding (use replicate)
-    int pad_h = src_h + ker_h - 1, pad_w = src_w + ker_w - 1;
-    unsigned char ***pad = new unsigned char **[pad_h];
-    for (int i = 0; i < pad_h; i++)
+    // NOTE: maybe need to use float type instead
+    unsigned char **gray = new unsigned char *[height], **revert = new unsigned char *[height], **gaussian = new unsigned char *[height];
+    for (int i = 0; i < height; i++)
     {
-        pad[i] = new unsigned char *[pad_w];
-        for (int j = 0; j < pad_w; j++)
+        gray[i] = new unsigned char [width];
+        revert[i] = new unsigned char [width];
+        gaussian[i] = new unsigned char [width];
+    }
+
+    // new & calc gray scale & revert
+    unsigned char r, g, b;
+    for (int i = 0; i < height; i++)
+    {
+        for (int j = 0; j < width; j++)
         {
-            pad[i][j] = new unsigned char[4];
-            for (int k = 0; k < 4; k++)
-            {
-//                pad[i][j][k] = src[std::max(i-ker_h/2, 0)][std::max(j-ker_w/2, 0)][k];
-                pad[i][j][k] = src[clamp(i - ker_h/2, 0, src_h-1)][clamp(j - ker_w/2, 0, src_w-1)][k];
-            }
+            r = adjust[i][j][0];
+            g = adjust[i][j][1];
+            b = adjust[i][j][2];
+            gray[i][j] = (r*4 + g*10 + b*2) >> 4;
+            revert[i][j] = 255 - gray[i][j];
         }
     }
 
-    std::cout << "here#121: time used: " << (clock() - t1) / 1000.f << std::endl;
-    t1 = clock();
-
-    // convolve 2D (kernel is same for all color channels)
-    for (int i = 0; i < src_h; i++)
+    // apply Gaussian to revert
+    float **kernel = new float*[3];
+    float k[3][3] = {
+        {0.095f, 0.118f, 0.095f},
+        {0.118f, 0.148f, 0.118f},
+        {0.095f, 0.118f, 0.095f}};
+    for (int i = 0; i < 3; i++)
     {
-        for (int j = 0; j < src_w; j++)
+        kernel[i] = new float[3];
+        for (int j = 0; j < 3; j++)
+            kernel[i][j] = k[i][j];
+    }
+    convolve2D(revert, gaussian, kernel, height, width, 3, 3);
+
+    // mix together
+    for (int i = 0; i < height; i++)
+    {
+        for (int j = 0; j < width; j++)
         {
-            float r = 0, g = 0, b = 0, a = 0;
-            for (int m = 0; m < ker_h; m++)
-            {
-                for (int n = 0; n < ker_w; n++)
-                {
-                    r += pad[i+m][j+n][0] * kernel[m][n];
-                    g += pad[i+m][j+n][1] * kernel[m][n];
-                    b += pad[i+m][j+n][2] * kernel[m][n];
-//                    std::cout << i << " " << j << " " << m << " " << n << std::endl;
-//                    a += pad[i+m][j+n][3] * kernel[m][n];
-                }
-            }
-            dst[i][j][0] = (unsigned char)clamp(r, 0.f, 255.f);
-            dst[i][j][1] = (unsigned char)clamp(g, 0.f, 255.f);
-            dst[i][j][2] = (unsigned char)clamp(b, 0.f, 255.f);
-//            dst[i][j][3] = (unsigned char)clamp(a, 0, 255);
+            float result = gaussian[i][j] == 255 ? 255 : std::min(gray[i][j] + (gray[i][j] * gaussian[i][j]) / (255 - gaussian[i][j]), 255);  // divide by 0!
+            filter[i][j][0] = filter[i][j][1] = filter[i][j][2] = (unsigned char)result;
         }
     }
 
-    std::cout << "here#122: time used: " << (clock() - t1) / 1000.f << std::endl;
-
-    for (int i = 0; i < pad_h; i++)
+    // delete
+    for (int i = 0; i < height; i++)
     {
-        for (int j = 0; j < pad_w; j++)
-        {
-            delete [] pad[i][j];
-
-        }
-        delete [] pad[i];
+        delete [] gray[i];
+        delete [] revert[i];
+        delete [] gaussian[i];
     }
-    delete [] pad;
-}
-
-void convolve3D(unsigned char ***src, unsigned char ***dst, float ***kernel, int src_h, int src_w, int ker_h, int ker_w)
-{
-    assert(ker_h % 2 == 1 && ker_w % 2 == 1);
-
-    float t1 = clock();
-    // padding (use replicate)
-    int pad_h = src_h + ker_h - 1, pad_w = src_w + ker_w - 1;
-    unsigned char ***pad = new unsigned char **[pad_h];
-    for (int i = 0; i < pad_h; i++)
-    {
-        pad[i] = new unsigned char *[pad_w];
-        for (int j = 0; j < pad_w; j++)
-        {
-            pad[i][j] = new unsigned char[4];
-            for (int k = 0; k < 4; k++)
-            {
-//                pad[i][j][k] = src[std::max(i-ker_h/2, 0)][std::max(j-ker_w/2, 0)][k];
-                pad[i][j][k] = src[clamp(i - ker_h/2, 0, src_h-1)][clamp(j - ker_w/2, 0, src_w-1)][k];
-            }
-        }
-    }
-
-    std::cout << "here#121: time used: " << (clock() - t1) / 1000.f << std::endl;
-    t1 = clock();
-
-    // convolve 2D (kernel is same for all color channels)
-    for (int i = 0; i < src_h; i++)
-    {
-        for (int j = 0; j < src_w; j++)
-        {
-            float r = 0, g = 0, b = 0, a = 0;
-            for (int m = 0; m < ker_h; m++)
-            {
-                for (int n = 0; n < ker_w; n++)
-                {
-                    r += pad[i+m][j+n][0] * kernel[0][m][n];
-                    g += pad[i+m][j+n][1] * kernel[1][m][n];
-                    b += pad[i+m][j+n][2] * kernel[2][m][n];
-//                    std::cout << i << " " << j << " " << m << " " << n << std::endl;
-//                    a += pad[i+m][j+n][3] * kernel[m][n];
-                }
-            }
-            dst[i][j][0] = (unsigned char)clamp(r, 0.f, 255.f);
-            dst[i][j][1] = (unsigned char)clamp(g, 0.f, 255.f);
-            dst[i][j][2] = (unsigned char)clamp(b, 0.f, 255.f);
-//            dst[i][j][3] = (unsigned char)clamp(a, 0, 255);
-        }
-    }
-
-    std::cout << "here#122: time used: " << (clock() - t1) / 1000.f << std::endl;
-
-    for (int i = 0; i < pad_h; i++)
-    {
-        for (int j = 0; j < pad_w; j++)
-        {
-            delete [] pad[i][j];
-
-        }
-        delete [] pad[i];
-    }
-    delete [] pad;
+    delete [] gray;
+    delete [] revert;
+    delete [] gaussian;
 }

@@ -33,7 +33,8 @@ private:
     void resetButtons();
     void storeImage();
     void adjustData();
-    void filterData(void (*filter)(unsigned char ***, unsigned char ***, int, int), int height, int width);
+    void applyAdjust();
+    void applyFilter(void (*filterFunc)(unsigned char ***, unsigned char ***, int, int));
     void updateImgFromData(std::shared_ptr<QImage> img, unsigned char ***data);
     void updatePixmapFromImg(QPixmap *pixmap, std::shared_ptr<QImage> img);
 
@@ -50,6 +51,7 @@ private slots:
     void on_pushButton_sharpen_clicked();
     void on_pushButton_smooth_clicked();
     void on_pushButton_warm_clicked();
+    void on_pushButton_sketch_clicked();
 
 public:
     std::shared_ptr<QImage> getOriginImage() { return this->img_origin; }
