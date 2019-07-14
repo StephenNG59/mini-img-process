@@ -36,6 +36,7 @@ void MainWindow::resetButtons()
     this->ui->horizontalSlider_lightness->setSliderPosition(50);
     this->ui->horizontalSlider_contrast->setSliderPosition(50);
     this->ui->horizontalSlider_saturation->setSliderPosition(50);
+    this->ui->horizontalSlider_hue->setSliderPosition(50);
 }
 
 void MainWindow::storeImage()
@@ -68,11 +69,12 @@ void MainWindow::storeImage()
 
 void MainWindow::adjustData()
 {
-    float light = ui->horizontalSlider_lightness->value() / 100.0f + 0.5f,
-            contrast = ui->horizontalSlider_contrast->value() / 100.0f + 0.5f,
-            saturation = ui->horizontalSlider_saturation->value() / 50.0f;
+    float light = ui->horizontalSlider_lightness->value() / 100.0f + 0.5f,      // 0.5 ~ 1.5
+            contrast = ui->horizontalSlider_contrast->value() / 100.0f + 0.5f,  // 0.5 ~ 1.5
+            saturation = ui->horizontalSlider_saturation->value() / 50.0f,      // 0 ~ 2
+            hue = ui->horizontalSlider_hue->value() - 50.f;                     // -50 ~ 50
     int height = this->img_origin->height(), width = this->img_origin->width();
-    int ave_light = this->ave_light, ave_saturation = this->ave_saturation;
+    int ave_light = this->ave_light, ave_saturation = this->ave_saturation, ave_hue = this->ave_hue;
 
     for (int i = 0; i < height; i++)
     {
@@ -82,14 +84,17 @@ void MainWindow::adjustData()
             int r = data_origin[i][j][0], g = data_origin[i][j][1], b = data_origin[i][j][2];
             QColor::fromRgb(r, g, b).getHsl(&h, &s, &l);
 
-            // Origin --> Contrast adjusted --> Saturation adjusted --> Lightness adjusted --> Adjusted
+            // Origin --> Contrast adjusted --> Saturation adjusted --> Hue adjusted --> Lightness adjusted --> Adjusted
             // ----------------------------------------------------------------------------------------
 
             // 1. contrast
             l = (int)clamp(ave_light + contrast * (l - ave_light), 0.f, 255.f);
             // 2. saturation
             s = (int)clamp(ave_saturation + saturation * (s - ave_saturation), 0.f, 255.f);
-            // 3. lightness
+            // 3. hue
+            h = (int)clamp(hue + h, 0.f, 359.f);
+//            h = (int)clamp((hue + 100) / 100.f * h, 0.f, 359.f);
+            // 4. lightness
             QColor::fromHsl(h, s, l).getRgb(&r, &g, &b);
             r = (int)clamp(light * r, 0.f, 255.f);
             g = (int)clamp(light * g, 0.f, 255.f);
@@ -102,6 +107,19 @@ void MainWindow::adjustData()
         }
     }
 
+    filterData();
+}
+
+void MainWindow::applyAdjust()
+{
+    adjustData();
+    updateImgFromData(img_changed, this->ui->pushButton_noFilter->isChecked() ? data_adjusted : data_filtered);
+    updatePixmapFromImg(pixmap_changed, img_changed);
+    ui->label_imgFrame->setPixmap(*pixmap_changed);
+}
+
+void MainWindow::filterData()
+{
     if (this->ui->pushButton_noFilter->isChecked() == false)
     {
         if (this->ui->pushButton_gray->isChecked())
@@ -116,15 +134,23 @@ void MainWindow::adjustData()
         {
             smoothFunc(this->data_adjusted, this->data_filtered, this->img_origin->height(), this->img_origin->width());
         }
+        else if (this->ui->pushButton_warm->isChecked())
+        {
+            warmFunc(this->data_adjusted, this->data_filtered, this->img_origin->height(), this->img_origin->width());
+        }
+        else if (this->ui->pushButton_cold->isChecked())
+        {
+            coldFunc(this->data_adjusted, this->data_filtered, this->img_origin->height(), this->img_origin->width());
+        }
+        else if (this->ui->pushButton_sketch->isChecked())
+        {
+            sketchFunc(this->data_adjusted, this->data_filtered, this->img_origin->height(), this->img_origin->width());
+        }
+        else if (this->ui->pushButton_sculpture->isChecked())
+        {
+            sculptureFunc(this->data_adjusted, this->data_filtered, this->img_origin->height(), this->img_origin->width());
+        }
     }
-}
-
-void MainWindow::applyAdjust()
-{
-    adjustData();
-    updateImgFromData(img_changed, this->ui->pushButton_noFilter->isChecked() ? data_adjusted : data_filtered);
-    updatePixmapFromImg(pixmap_changed, img_changed);
-    ui->label_imgFrame->setPixmap(*pixmap_changed);
 }
 
 void MainWindow::applyFilter(void (*filterFunc)(unsigned char ***, unsigned char ***, int, int))
@@ -192,6 +218,7 @@ void MainWindow::on_actionOpen_Image_triggered()
     QColor ave_color = QColor::fromRgb(ave_r, ave_g, ave_b);
     ave_light = ave_color.lightness();
     ave_saturation = ave_color.hslSaturation();
+    ave_hue = ave_color.hue();
 }
 
 void MainWindow::on_pushButton_showOrigin_pressed()
@@ -204,6 +231,12 @@ void MainWindow::on_pushButton_showOrigin_released()
     ui->label_imgFrame->setPixmap(*pixmap_changed);
 }
 
+void MainWindow::on_pushButton_reset_clicked()
+{
+    resetButtons();
+    applyAdjust();
+}
+
 void MainWindow::on_horizontalSlider_lightness_sliderReleased() {
     applyAdjust();
 }
@@ -213,6 +246,11 @@ void MainWindow::on_horizontalSlider_contrast_sliderReleased() {
 }
 
 void MainWindow::on_horizontalSlider_saturation_sliderReleased() {
+    applyAdjust();
+}
+
+void MainWindow::on_horizontalSlider_hue_sliderReleased()
+{
     applyAdjust();
 }
 
@@ -242,7 +280,17 @@ void MainWindow::on_pushButton_warm_clicked()
     applyFilter(warmFunc);
 }
 
+void MainWindow::on_pushButton_cold_clicked()
+{
+    applyFilter(coldFunc);
+}
+
 void MainWindow::on_pushButton_sketch_clicked()
 {
     applyFilter(sketchFunc);
+}
+
+void MainWindow::on_pushButton_sculpture_clicked()
+{
+    applyFilter(sculptureFunc);
 }

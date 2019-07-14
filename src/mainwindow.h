@@ -29,11 +29,12 @@ public:
 
 private:
     Ui::MainWindow *ui;
-    int ave_r = 0, ave_g = 0, ave_b = 0, ave_light = 0, ave_saturation = 0;
+    int ave_r = 0, ave_g = 0, ave_b = 0, ave_light = 0, ave_saturation = 0, ave_hue = 0;
     void resetButtons();
     void storeImage();
     void adjustData();
     void applyAdjust();
+    void filterData();
     void applyFilter(void (*filterFunc)(unsigned char ***, unsigned char ***, int, int));
     void updateImgFromData(std::shared_ptr<QImage> img, unsigned char ***data);
     void updatePixmapFromImg(QPixmap *pixmap, std::shared_ptr<QImage> img);
@@ -44,14 +45,18 @@ private slots:
     void on_horizontalSlider_lightness_sliderReleased();
     void on_horizontalSlider_contrast_sliderReleased();
     void on_horizontalSlider_saturation_sliderReleased();
+    void on_horizontalSlider_hue_sliderReleased();
     void on_pushButton_showOrigin_pressed();
     void on_pushButton_showOrigin_released();
+    void on_pushButton_reset_clicked();
     void on_pushButton_noFilter_clicked();
     void on_pushButton_gray_clicked();
     void on_pushButton_sharpen_clicked();
     void on_pushButton_smooth_clicked();
     void on_pushButton_warm_clicked();
+    void on_pushButton_cold_clicked();
     void on_pushButton_sketch_clicked();
+    void on_pushButton_sculpture_clicked();
 
 public:
     std::shared_ptr<QImage> getOriginImage() { return this->img_origin; }

@@ -1,7 +1,7 @@
 #include "img_process.h"
 #include "basic.h"
 
-void convolve2D(unsigned char ***src, unsigned char ***dst, float **kernel, int src_h, int src_w, int ker_h, int ker_w)
+void convolve2D(unsigned char ***src, unsigned char ***dst, float **kernel, int src_h, int src_w, int ker_h, int ker_w, int bias)
 {
     assert(ker_h % 2 == 1 && ker_w % 2 == 1);
 
@@ -43,9 +43,9 @@ void convolve2D(unsigned char ***src, unsigned char ***dst, float **kernel, int 
 //                    a += pad[i+m][j+n][3] * kernel[m][n];
                 }
             }
-            dst[i][j][0] = (unsigned char)clamp(r, 0.f, 255.f);
-            dst[i][j][1] = (unsigned char)clamp(g, 0.f, 255.f);
-            dst[i][j][2] = (unsigned char)clamp(b, 0.f, 255.f);
+            dst[i][j][0] = (unsigned char)clamp(r + bias, 0.f, 255.f);
+            dst[i][j][1] = (unsigned char)clamp(g + bias, 0.f, 255.f);
+            dst[i][j][2] = (unsigned char)clamp(b + bias, 0.f, 255.f);
 //            dst[i][j][3] = (unsigned char)clamp(a, 0, 255);
         }
     }
@@ -63,7 +63,7 @@ void convolve2D(unsigned char ***src, unsigned char ***dst, float **kernel, int 
     delete [] pad;
 }
 
-void convolve2D(unsigned char **src, unsigned char **dst, float **kernel, int src_h, int src_w, int ker_h, int ker_w)
+void convolve2D(unsigned char **src, unsigned char **dst, float **kernel, int src_h, int src_w, int ker_h, int ker_w, int bias)
 {
     assert(ker_h % 2 == 1 && ker_w % 2 == 1);
 
@@ -92,7 +92,7 @@ void convolve2D(unsigned char **src, unsigned char **dst, float **kernel, int sr
                     gray += pad[i+m][j+n] * kernel[m][n];
                 }
             }
-            dst[i][j] = (unsigned char)clamp(gray, 0.f, 255.f);
+            dst[i][j] = (unsigned char)clamp(gray + bias, 0.f, 255.f);
         }
     }
 
@@ -207,23 +207,29 @@ void sharpenFunc(unsigned char ***adjust, unsigned char ***filter, int height, i
 
 void smoothFunc(unsigned char ***adjust, unsigned char ***filter, int height, int width)
 {
-    float **kernel = new float*[7];
-    float k[7][7] = {
-        {0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f},
-        {0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f},
-        {0.01f, 0.01f, 0.05f, 0.05f, 0.05f, 0.01f, 0.01f},
-        {0.01f, 0.01f, 0.05f, 0.20f, 0.05f, 0.01f, 0.01f},
-        {0.01f, 0.01f, 0.05f, 0.05f, 0.05f, 0.01f, 0.01f},
-        {0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f},
-        {0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f}};
-    for (int i = 0; i < 7; i++)
+    float **kernel = new float*[5];
+//    float k[7][7] = {
+//        {0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f},
+//        {0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f},
+//        {0.01f, 0.01f, 0.05f, 0.05f, 0.05f, 0.01f, 0.01f},
+//        {0.01f, 0.01f, 0.05f, 0.20f, 0.05f, 0.01f, 0.01f},
+//        {0.01f, 0.01f, 0.05f, 0.05f, 0.05f, 0.01f, 0.01f},
+//        {0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f},
+//        {0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f}};
+    float k[5][5] = {
+        {0.02f, 0.02f, 0.02f, 0.02f, 0.02f},
+        {0.02f, 0.05f, 0.05f, 0.05f, 0.02f},
+        {0.02f, 0.05f, 0.28f, 0.05f, 0.02f},
+        {0.02f, 0.05f, 0.05f, 0.05f, 0.02f},
+        {0.02f, 0.02f, 0.02f, 0.02f, 0.02f}};
+    for (int i = 0; i < 5; i++)
     {
-        kernel[i] = new float[7];
-        for (int j = 0; j < 7; j++)
+        kernel[i] = new float[5];
+        for (int j = 0; j < 5; j++)
             kernel[i][j] = k[i][j];
     }
 
-    convolve2D(adjust, filter, kernel, height, width, 7, 7);
+    convolve2D(adjust, filter, kernel, height, width, 5, 5);
 }
 
 void warmFunc(unsigned char ***adjust, unsigned char ***filter, int height, int width)
@@ -233,6 +239,30 @@ void warmFunc(unsigned char ***adjust, unsigned char ***filter, int height, int 
         {{1.25f}},
         {{0.95f}},
         {{0.75f}}
+    };
+    for (int c = 0; c < 3; c++)
+    {
+        kernel[c] = new float*[1];
+        for (int i = 0; i < 1; i++)
+        {
+            kernel[c][i] = new float[1];
+            for (int j = 0; j < 1; j++)
+            {
+                kernel[c][i][j] = k[c][i][j];
+            }
+        }
+    }
+
+    convolve3D(adjust, filter, kernel, height, width, 1, 1);
+}
+
+void coldFunc(unsigned char ***adjust, unsigned char ***filter, int height, int width)
+{
+    float ***kernel = new float**[3];
+    float k[3][1][1] = {
+        {{0.80f}},
+        {{0.95f}},
+        {{1.15f}}
     };
     for (int c = 0; c < 3; c++)
     {
@@ -309,4 +339,21 @@ void sketchFunc(unsigned char ***adjust, unsigned char ***filter, int height, in
     delete [] gray;
     delete [] revert;
     delete [] gaussian;
+}
+
+void sculptureFunc(unsigned char ***adjust, unsigned char ***filter, int height, int width)
+{
+    float **kernel = new float*[3];
+    float k[3][3] = {
+        {-1.0f, 0, 0   },
+        {    0, 0, 0   },
+        {    0, 0, 1.0f}};
+    for (int i = 0; i < 3; i++)
+    {
+        kernel[i] = new float[3];
+        for (int j = 0; j < 3; j++)
+            kernel[i][j] = k[i][j];
+    }
+
+    convolve2D(adjust, filter, kernel, height, width, 3, 3, 128);
 }
