@@ -25,18 +25,22 @@ DEFINES += QT_DEPRECATED_WARNINGS
 CONFIG += c++11
 
 SOURCES += \
-        gray.cpp \
         img_process.cpp \
+        logindialog.cpp \
         main.cpp \
         mainwindow.cpp
 
 HEADERS += \
         ../build-hello-Desktop_Qt_5_13_0_MinGW_64_bit-Debug/ui_mainwindow.h \
-        gray.h \
+        basic.h \
+        basic.h \
+        basic.h \
         img_process.h \
+        logindialog.h \
         mainwindow.h
 
 FORMS += \
+        logindialog.ui \
         mainwindow.ui
 
 # Default rules for deployment.
