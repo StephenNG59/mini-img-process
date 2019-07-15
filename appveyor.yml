@@ -1,6 +1,0 @@
-install:
-  - set QTDIR=D:\Qt\5.13.0\mingw73_64
-  - set PATH=%PATH%;%QTDIR%\bin
-build_script:
-  - qmake .\hello.pro
-  - mingw32-make
