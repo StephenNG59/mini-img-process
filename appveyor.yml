@@ -1,0 +1,7 @@
+os: osx
+osx_image: xcode10.1
+language: cpp
+script:
+	D:\Qt\5.13.0\mingw73_64\bin\qmake src/hello.pro
+notifications:
+    email: false
