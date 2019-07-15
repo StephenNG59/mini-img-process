@@ -5,11 +5,11 @@ branches:
                 - master
                 - dev
 
-environment:
-        matrix:
-        - name: win32
+                  #environment:
+                  #  matrix:
+                  #  - name: win32
           #                platform: amd64_x86
-                qt: msvc2017
+          #qt: msvc2017
 
 build_script:
 #        - call ""
