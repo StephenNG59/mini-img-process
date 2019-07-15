@@ -1,0 +1,7 @@
+os: osx
+osx_image: xcode10.1
+language: cpp
+script:
+	qmake src/hello.pro
+notifications:
+    email: false
