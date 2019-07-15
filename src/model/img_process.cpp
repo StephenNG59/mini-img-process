@@ -186,23 +186,19 @@ void grayFunc(unsigned char ***adjust, unsigned char ***filter, int height, int 
 
 void sharpenFunc(unsigned char ***adjust, unsigned char ***filter, int height, int width)
 {
-    float **kernel = new float*[7];
-    float k[7][7] = {
-        {-0.1f, -0.1f, -0.1f, -0.1f, -0.1f, -0.1f, -0.1f},
-        {-0.1f, -0.1f, -0.1f, -0.1f, -0.1f, -0.1f, -0.1f},
-        {-0.1f, -0.1f, -0.1f, -0.1f, -0.1f, -0.1f, -0.1f},
-        {-0.1f, -0.1f, -0.1f, +5.8f, -0.1f, -0.1f, -0.1f},
-        {-0.1f, -0.1f, -0.1f, -0.1f, -0.1f, -0.1f, -0.1f},
-        {-0.1f, -0.1f, -0.1f, -0.1f, -0.1f, -0.1f, -0.1f},
-        {-0.1f, -0.1f, -0.1f, -0.1f, -0.1f, -0.1f, -0.1f}};
-    for (int i = 0; i < 7; i++)
+    float **kernel = new float*[3];
+    float k[3][3] = {
+        {-0.1f, -0.1f, -0.1f},
+        {-0.1f, +1.8f, -0.1f},
+        {-0.1f, -0.1f, -0.1f}};
+    for (int i = 0; i < 3; i++)
     {
-        kernel[i] = new float[7];
-        for (int j = 0; j < 7; j++)
+        kernel[i] = new float[3];
+        for (int j = 0; j < 3; j++)
             kernel[i][j] = k[i][j];
     }
 
-    convolve2D(adjust, filter, kernel, height, width, 7, 7);
+    convolve2D(adjust, filter, kernel, height, width, 3, 3);
 }
 
 void smoothFunc(unsigned char ***adjust, unsigned char ***filter, int height, int width)

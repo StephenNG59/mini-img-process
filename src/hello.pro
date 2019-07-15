@@ -25,23 +25,21 @@ DEFINES += QT_DEPRECATED_WARNINGS
 CONFIG += c++11
 
 SOURCES += \
-        img_process.cpp \
+        app/main.cpp \
         logindialog.cpp \
-        main.cpp \
-        mainwindow.cpp
+        model/img_process.cpp \
+        view/mainwindow.cpp
 
 HEADERS += \
         ../build-hello-Desktop_Qt_5_13_0_MinGW_64_bit-Debug/ui_mainwindow.h \
-        basic.h \
-        basic.h \
-        basic.h \
-        img_process.h \
         logindialog.h \
-        mainwindow.h
+        model/basic.h \
+        model/img_process.h \
+        view/mainwindow.h
 
 FORMS += \
         logindialog.ui \
-        mainwindow.ui
+        view/mainwindow.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
