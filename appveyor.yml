@@ -5,16 +5,17 @@ branches:
                 - master
                 - dev
 
-                  #environment:
-                  #  matrix:
-                  #  - name: win32
-          #                platform: amd64_x86
-          #qt: msvc2017
+#environment:
+          #  matrix:
+          #  - name: win32
+          #     platform: amd64_x86
+          #     qt: msvc2017
 
 build_script:
 #        - call ""
         - set QTDIR=D:\Qt\5.13.0\mingw73_64
         - set PATH=%PATH%;%QTDIR%\bin;
         - qmake
-        - nmake & exit 0
+        - mingw32-make & exit 0
+#        - nmake & exit 0
 
