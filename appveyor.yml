@@ -8,7 +8,7 @@ branches:
 environment:
         matrix:
         - name: win32
-                platform: amd64_x86
+          #                platform: amd64_x86
                 qt: msvc2017
 
 build_script:
