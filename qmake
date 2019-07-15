@@ -1,0 +1,7 @@
+#qmake
+
+SOURCES = hello.cpp
+HEADERS = hello.h
+CONFIG += qt warn_on release
+
+

@@ -1,7 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include "img_process.h"
-#include "basic.h"
+#include "../model/img_process.h"
+#include "../model/basic.h"
 
 
 MainWindow::MainWindow(QWidget *parent) :

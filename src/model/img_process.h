@@ -7,7 +7,7 @@
 
 #include <QPixmap>
 #include <QMovie>
-#include <mainwindow.h>
+#include "../view/mainwindow.h"
 
 void convolve2D(unsigned char ***src, unsigned char ***dst, float **kernel, int src_h, int src_w, int ker_h, int ker_w, int bias=0);
 
