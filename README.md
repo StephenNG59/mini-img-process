@@ -2,6 +2,11 @@
 
 Mini image processing widget application built with Qt.
 
+<<<<<<< HEAD
+=======
+[build](https://ci.appveyor.com/project/BuGeChenkehao/mini-img-process)
+
+>>>>>>> dev
 ### Dev notes
 
 添加new feature(function)的时候：
