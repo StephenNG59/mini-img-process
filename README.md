@@ -2,29 +2,26 @@
 
 Mini image processing widget application built with Qt.
 
-<<<<<<< HEAD
-=======
-[build](https://ci.appveyor.com/project/BuGeChenkehao/mini-img-process)
+Just for fun, not completed.
 
->>>>>>> dev
-### Dev notes
+## Functions
 
-添加new feature(function)的时候：
+* Load files, (todo: save file);
 
-* 先进入dev分支：
-    
-    $ git checkout dev
+* Adjust lightness, contrast, saturation, hue;
 
-* 在dev上新建本地分支：
-    
-    $ git checkout -b [feature-name]
+* Apply 7 kinds of filters;
 
-* 进入新建的本地分支(如果紧接着上一步，不需要做)：
-    
-    $ git checkout [feature-name]
+## Screenshots
 
-* edit the codes, add & commit.
+![1](screenshots/1.png "Main Interface")
 
-* 在远程新建相同名字（不同也行）的分支，把新建的本地分支推送到新建的远程分支：
-    
-    $ git push -u origin [feature-name]
+![5](screenshots/5.png "Origin Image #3")
+
+![6](screenshots/6.png "Adjusted Image #3")
+
+![2](screenshots/2.png "Origin Image #1")
+
+![3](screenshots/3.png "Adjusted Image #1")
+
+![4](screenshots/4.png "Filtered Image #2")
